@@ -11,7 +11,19 @@ async function fetchPage(url: string) {
     .then((res) => res.data);
 }
 
-export async function getUrlsOnPage(url: string) {
-  const html = await fetchPage(url);
-  return getUrls(html, {requireSchemeOrWww: true, stripHash: true, removeQueryParameters: true});
+/**
+ * Fetches the HTML of the given pages and returns a map of the page URLs to the URLs found on the page.
+ * @param pages
+ */
+export async function getPageUrls(pages: string | string[]): Promise<Record<string, string[] | null>> {
+  const pagesArr = Array.isArray(pages) ? pages : [pages];
+  const htmls = await Promise.allSettled(pagesArr.map(fetchPage));
+  const urls = htmls.map((html) => {
+    if (html.status === "fulfilled") {
+      return Array.from(getUrls(html.value, {requireSchemeOrWww: true, stripHash: true, removeQueryParameters: true}));
+    } else {
+      return null;
+    }
+  });
+  return Object.fromEntries(pagesArr.map((page, i) => [page, urls[i]]));
 }
