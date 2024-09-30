@@ -6,16 +6,12 @@ export enum ScrapeStatus {
   ERROR = 'ERROR',
 }
 
-
 function coerceToMap<T>(value: T): T | Map<unknown, unknown> {
   if (Array.isArray(value)) return new Map(value);
   return value;
 }
 
-
 const ScrapeEntrySchema = z.object({
-  domain: z.string(),
-  path: z.string(),
   status: z.nativeEnum(ScrapeStatus).catch(ScrapeStatus.FOUND),
   title: z.string().nullable().catch(null),
   description: z.string().nullable().catch(null),
@@ -28,3 +24,9 @@ export const DomainMapSchema = z.preprocess(coerceToMap, z.map(z.string(), Scrap
 export type ScrapeEntry = z.infer<typeof ScrapeEntrySchema>;
 export type ScrapeEntriesMap = z.infer<typeof ScrapeEntriesMapSchema>;
 export type DomainMap = z.infer<typeof DomainMapSchema>;
+
+/**
+ * Root level contains the domain name
+ * Each subsequent level contains a path segment
+ */
+export type IndexTree = Map<string, IndexTree>;
