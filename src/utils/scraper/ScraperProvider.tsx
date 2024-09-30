@@ -107,8 +107,6 @@ export const ScraperProvider: FC<PropsWithChildren> = ({children}) => {
     })
   }, []);
 
-  console.log({domainMap, indexTree});
-
   return (
     <ScraperContext.Provider value={{addUrls, indexTree, domainMap}}>
       {children}

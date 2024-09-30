@@ -1,9 +1,10 @@
 'use client';
 
-import {Button, Typography} from "@mui/joy";
+import {Button, Container, Typography} from "@mui/joy";
 import {useContext} from "react";
 import {getPageUrls} from "../utils/scraper/serverParser";
 import {ScraperContext} from "../utils/scraper/ScraperContext";
+import ResultTree from "../components/ResultTree";
 
 
 export default function Home() {
@@ -13,8 +14,9 @@ export default function Home() {
     getPageUrls(['https://lds.org', 'https://apple.com', 'https://usu.edu']).then(addUrls)
   }
 
-  return <>
+  return <Container maxWidth='lg'>
     <Typography level='h1'>Web Scraper</Typography>
     <Button onClick={onClick}>Test</Button>
-  </>
+    <ResultTree/>
+  </Container>
 }
