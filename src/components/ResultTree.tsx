@@ -1,30 +1,40 @@
 'use client';
 
 import {FC, useContext} from "react";
-import {ScraperContext} from "../utils/scraper/ScraperContext";
+import {ScraperContext} from "@/utils/scraper/ScraperContext";
 import {Typography} from "@mui/joy";
-import {IndexTree, ScrapeEntriesMap} from "../utils/scraper/Scraper.types";
+import {IndexTree, ScrapeEntriesMap, ScrapeStatus} from "@/utils/scraper/Scraper.types";
 
 type ResultItemProps = {
-  level: number
   indexTree: IndexTree
   scrapeEntriesMap: ScrapeEntriesMap | null
+  parentSegments: string[]
+  domain: string
 }
 
 const ResultItem: FC<ResultItemProps> = (props) => {
-  const {level, indexTree, scrapeEntriesMap} = props
+  const {indexTree, scrapeEntriesMap, parentSegments, domain} = props
 
   return (
     <>
-      {[...indexTree.entries()].map(([segment, childIndexTree]) => (
-        <details key={segment} style={{marginLeft: 16 * level}}>
-          <summary>
-            {/* TODO: Color code based on status */}
-            <Typography>{segment}</Typography>
-          </summary>
-          <ResultItem level={level + 1} indexTree={childIndexTree} scrapeEntriesMap={scrapeEntriesMap}/>
-        </details>
-      ))}
+      {[...indexTree.entries()].sort(
+        ([segmentA], [segmentB]) => segmentA.localeCompare(segmentB)
+      ).map(([segment, childIndexTree]) => {
+        const segments = [...parentSegments, segment]
+        const path = '/' + segments.join('/')
+        const scrapeEntry = scrapeEntriesMap?.get(path)
+
+        return (
+          <details key={segment} style={{marginLeft: 16}}>
+            <summary>
+              <Typography style={{display: 'inline'}}
+                          color={scrapeEntry?.status === ScrapeStatus.ERROR ? 'danger' : scrapeEntry?.status === ScrapeStatus.FETCHED ? 'success' : undefined}>{segment}</Typography>
+            </summary>
+            <ResultItem indexTree={childIndexTree} scrapeEntriesMap={scrapeEntriesMap} parentSegments={segments}
+                        domain={domain}/>
+          </details>
+        )
+      })}
     </>
   )
 }
@@ -35,12 +45,26 @@ const ResultTree: FC = () => {
   return (<>
     <Typography level='h2'>{domainMap.size} Domains</Typography>
 
-    {[...indexTree.entries()].map(([domain, childIndexTree]) => (
-      <details key={domain}>
-        <summary>{domain} ({domainMap.get(domain)?.size ?? 0} paths)</summary>
-        <ResultItem level={1} indexTree={childIndexTree} scrapeEntriesMap={domainMap.get(domain) ?? null}/>
-      </details>
-    ))}
+    {[...indexTree.entries()]
+      .sort(([domainA], [domainB]) => {
+        const aName = domainA.split('.').reverse().join('.')
+        const bName = domainB.split('.').reverse().join('.')
+        return aName.localeCompare(bName)
+      })
+      .map(([domain, childIndexTree]) => {
+        const scrapeEntry = domainMap.get(domain)?.get('/')
+
+        return (
+          <details key={domain}>
+            <summary>
+              <Typography style={{display: 'inline'}}
+                          color={scrapeEntry?.status === ScrapeStatus.ERROR ? 'danger' : scrapeEntry?.status === ScrapeStatus.FETCHED ? 'success' : undefined}>{domain} ({domainMap.get(domain)?.size ?? 0} paths)</Typography>
+            </summary>
+            <ResultItem indexTree={childIndexTree} scrapeEntriesMap={domainMap.get(domain) ?? null} parentSegments={[]}
+                        domain={domain}/>
+          </details>
+        )
+      })}
   </>)
 }
 
