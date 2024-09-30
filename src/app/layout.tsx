@@ -1,6 +1,7 @@
 import type {Metadata, Viewport} from "next";
 import React from "react";
 import ThemeRegistry from "./ThemeRegistry";
+import {ScraperProvider} from "../utils/scraper/ScraperProvider";
 
 
 export const metadata: Metadata = {
@@ -15,7 +16,9 @@ export default function RootLayout({children}: Readonly<{ children: React.ReactN
   return (
     <html lang="en">
     <body>
-    <ThemeRegistry options={{key: 'joy'}}>{children}</ThemeRegistry>
+    <ScraperProvider>
+      <ThemeRegistry options={{key: 'joy'}}>{children}</ThemeRegistry>
+    </ScraperProvider>
     </body>
     </html>
   );

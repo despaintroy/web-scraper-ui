@@ -11,10 +11,17 @@ function coerceToMap<T>(value: T): T | Map<unknown, unknown> {
   return value;
 }
 
+function coerceToSet<T>(value: T): T | Set<unknown> {
+  if (Array.isArray(value)) return new Set(value);
+  return value;
+}
+
 const ScrapeEntrySchema = z.object({
   status: z.nativeEnum(ScrapeStatus).catch(ScrapeStatus.FOUND),
   title: z.string().nullable().catch(null),
   description: z.string().nullable().catch(null),
+  favorite: z.boolean().catch(false),
+  referrers: z.preprocess(coerceToSet, z.set(z.string())).catch(new Set()),
 });
 
 const ScrapeEntriesMapSchema = z.preprocess(coerceToMap, z.map(z.string(), ScrapeEntrySchema)).catch(new Map()); // path -> ScrapeEntry

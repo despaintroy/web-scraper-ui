@@ -11,16 +11,24 @@ async function fetchPage(url: string) {
     .then((res) => res.data);
 }
 
+/** Map page url -> found urls */
+export type ScrapeRequestResult = Record<string, string[] | null>;
+
 /**
  * Fetches the HTML of the given pages and returns a map of the page URLs to the URLs found on the page.
  * @param pages
  */
-export async function getPageUrls(pages: string | string[]): Promise<Record<string, string[] | null>> {
+export async function getPageUrls(pages: string | string[]): Promise<ScrapeRequestResult> {
   const pagesArr = Array.isArray(pages) ? pages : [pages];
   const htmls = await Promise.allSettled(pagesArr.map(fetchPage));
   const urls = htmls.map((html) => {
     if (html.status === "fulfilled") {
-      return Array.from(getUrls(html.value, {requireSchemeOrWww: true, stripHash: true, removeQueryParameters: true}));
+      return Array.from(getUrls(html.value, {
+        requireSchemeOrWww: true,
+        stripHash: true,
+        removeQueryParameters: true,
+        stripWWW: true
+      }));
     } else {
       return null;
     }

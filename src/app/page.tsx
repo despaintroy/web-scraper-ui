@@ -1,19 +1,20 @@
 'use client';
 
-import {Typography} from "@mui/joy";
-import {useEffect} from "react";
-import {getUrlsOnPage} from "../utils/scraper/serverParser";
+import {Button, Typography} from "@mui/joy";
+import {useContext} from "react";
+import {getPageUrls} from "../utils/scraper/serverParser";
+import {ScraperContext} from "../utils/scraper/ScraperContext";
 
-
-const test = async () => {
-  const urls = await getUrlsOnPage("https://www.usu.edu")
-  console.log(urls);
-}
 
 export default function Home() {
-  useEffect(() => {
-    test();
-  }, []);
+  const {addUrls} = useContext(ScraperContext)
 
-  return <Typography level='h1'>Web Scraper</Typography>
+  const onClick = async () => {
+    getPageUrls(['https://lds.org', 'https://apple.com', 'https://usu.edu']).then(addUrls)
+  }
+
+  return <>
+    <Typography level='h1'>Web Scraper</Typography>
+    <Button onClick={onClick}>Test</Button>
+  </>
 }

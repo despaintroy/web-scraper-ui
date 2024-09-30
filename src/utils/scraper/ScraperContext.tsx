@@ -1,13 +1,17 @@
 import {createContext} from "react";
-import {DomainMap} from "./Scraper.types.ts";
+import {ScrapeRequestResult} from "./serverParser";
+import {DomainMap, IndexTree} from "./Scraper.types";
 
 type ScraperContextType = {
+  addUrls(result: ScrapeRequestResult): void;
+  indexTree: IndexTree;
   domainMap: DomainMap;
-  setDomainMap: (domainMap: DomainMap) => void;
 }
 
 export const ScraperContext = createContext<ScraperContextType>({
-  domainMap: new Map(),
-  setDomainMap: () => {
+  addUrls: () => {
+    throw new Error('ScraperContext not provided');
   },
+  indexTree: new Map(),
+  domainMap: new Map(),
 });
