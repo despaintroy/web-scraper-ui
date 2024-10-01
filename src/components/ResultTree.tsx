@@ -1,9 +1,17 @@
 'use client';
 
-import {FC, useContext} from "react";
+import {FC, useContext, useState} from "react";
 import {ScraperContext} from "@/utils/scraper/ScraperContext";
-import {Typography} from "@mui/joy";
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionGroup,
+  AccordionSummary,
+  Stack,
+  Typography
+} from "@mui/joy";
 import {IndexTree, ScrapeEntriesMap, ScrapeStatus} from "@/utils/scraper/Scraper.types";
+import {collapseIndexTree} from "@/utils/scraper/helpers";
 
 type ResultItemProps = {
   indexTree: IndexTree
@@ -41,30 +49,45 @@ const ResultItem: FC<ResultItemProps> = (props) => {
 
 const ResultTree: FC = () => {
   const {domainMap, indexTree} = useContext(ScraperContext)
+  const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
 
   return (<>
     <Typography level='h2'>{domainMap.size} Domains</Typography>
 
-    {[...indexTree.entries()]
-      .sort(([domainA], [domainB]) => {
-        const aName = domainA.split('.').reverse().join('.')
-        const bName = domainB.split('.').reverse().join('.')
-        return aName.localeCompare(bName)
-      })
-      .map(([domain, childIndexTree]) => {
-        const scrapeEntry = domainMap.get(domain)?.get('/')
+    <AccordionGroup>
+      {[...indexTree.entries()]
+        .sort(([domainA], [domainB]) => {
+          const aName = domainA.split('.').reverse().join('.')
+          const bName = domainB.split('.').reverse().join('.')
+          return aName.localeCompare(bName)
+        })
+        .map(([domain, childIndexTree], index) => {
+          const scrapeEntry = domainMap.get(domain)?.get('/')
+          const hasChildren = childIndexTree.size > 0
+          const childrenCount = hasChildren ? (domainMap.get(domain)?.size ?? 0) : 0
 
-        return (
-          <details key={domain}>
-            <summary>
-              <Typography style={{display: 'inline'}}
-                          color={scrapeEntry?.status === ScrapeStatus.ERROR ? 'danger' : scrapeEntry?.status === ScrapeStatus.FETCHED ? 'success' : undefined}>{domain} ({domainMap.get(domain)?.size ?? 0} paths)</Typography>
-            </summary>
-            <ResultItem indexTree={childIndexTree} scrapeEntriesMap={domainMap.get(domain) ?? null} parentSegments={[]}
-                        domain={domain}/>
-          </details>
-        )
-      })}
+          return (
+            <Accordion key={domain}
+                       expanded={expandedIndex === index}
+                       onChange={() => setExpandedIndex(expandedIndex === index ? null : index)}
+                       disabled={!hasChildren}
+            >
+              <AccordionSummary indicator={hasChildren ? undefined : null}>
+                <Stack direction='row' alignItems='center'>
+                  <Typography style={{display: 'inline'}}
+                              color={scrapeEntry?.status === ScrapeStatus.ERROR ? 'danger' : scrapeEntry?.status === ScrapeStatus.FETCHED ? 'success' : undefined}>{domain} {childrenCount ? `(${childrenCount} paths)` : null}</Typography>
+                </Stack>
+              </AccordionSummary>
+              <AccordionDetails>
+                <ResultItem indexTree={collapseIndexTree(childIndexTree)}
+                            scrapeEntriesMap={domainMap.get(domain) ?? null}
+                            parentSegments={[]}
+                            domain={domain}/>
+              </AccordionDetails>
+            </Accordion>
+          )
+        })}
+    </AccordionGroup>
   </>)
 }
 

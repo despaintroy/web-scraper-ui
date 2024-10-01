@@ -21,3 +21,23 @@ export const createIndexTree = (domainMap: DomainMap): IndexTree => {
 
   return indexTree;
 }
+
+/**
+ * Collapse consecutive segments with only one child into a single segment (separated by '/')
+ */
+export const collapseIndexTree = (indexTree: IndexTree): IndexTree => {
+  const collapsedTree = new Map<string, IndexTree>();
+
+  for (const [segment, childTree] of indexTree.entries()) {
+    const collapsedChild = collapseIndexTree(childTree);
+
+    if (collapsedChild.size === 1) {
+      const [childSegment, grandChildTree] = [...collapsedChild.entries()][0];
+      collapsedTree.set(`${segment}/${childSegment}`, grandChildTree);
+    } else {
+      collapsedTree.set(segment, collapsedChild);
+    }
+  }
+
+  return collapsedTree;
+}

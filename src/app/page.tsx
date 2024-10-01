@@ -14,7 +14,7 @@ export default function Home() {
     getPageUrls(['https://churchofjesuschrist.org', 'https://apple.com', 'https://usu.edu']).then(addUrls)
   }
 
-  return <Container maxWidth='lg'>
+  return <Container maxWidth='md'>
     <Typography level='h1'>Web Scraper</Typography>
     <Button onClick={onClick}>Test</Button>
     <ResultTree/>
