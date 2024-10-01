@@ -1,9 +1,9 @@
-import {z} from "zod";
+import { z } from "zod";
 
 export enum ScrapeStatus {
-  FOUND = 'FOUND',
-  FETCHED = 'FETCHED',
-  ERROR = 'ERROR',
+  FOUND = "FOUND",
+  FETCHED = "FETCHED",
+  ERROR = "ERROR",
 }
 
 function coerceToMap<T>(value: T): T | Map<unknown, unknown> {
@@ -24,9 +24,13 @@ const ScrapeEntrySchema = z.object({
   referrers: z.preprocess(coerceToSet, z.set(z.string())).catch(new Set()),
 });
 
-const ScrapeEntriesMapSchema = z.preprocess(coerceToMap, z.map(z.string(), ScrapeEntrySchema)).catch(new Map()); // path -> ScrapeEntry
+const ScrapeEntriesMapSchema = z
+  .preprocess(coerceToMap, z.map(z.string(), ScrapeEntrySchema))
+  .catch(new Map()); // path -> ScrapeEntry
 
-export const DomainMapSchema = z.preprocess(coerceToMap, z.map(z.string(), ScrapeEntriesMapSchema)).catch(new Map()); // domain -> ScrapeEntriesMap
+export const DomainMapSchema = z
+  .preprocess(coerceToMap, z.map(z.string(), ScrapeEntriesMapSchema))
+  .catch(new Map()); // domain -> ScrapeEntriesMap
 
 export type ScrapeEntry = z.infer<typeof ScrapeEntrySchema>;
 export type ScrapeEntriesMap = z.infer<typeof ScrapeEntriesMapSchema>;

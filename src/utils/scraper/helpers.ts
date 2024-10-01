@@ -1,4 +1,4 @@
-import {DomainMap, IndexTree} from "./Scraper.types";
+import { DomainMap, IndexTree } from "./Scraper.types";
 
 export const createIndexTree = (domainMap: DomainMap): IndexTree => {
   const indexTree = new Map<string, IndexTree>();
@@ -12,7 +12,8 @@ export const createIndexTree = (domainMap: DomainMap): IndexTree => {
       let currentNode = domainNode;
 
       for (const segment of pathSegments) {
-        const nextNode = currentNode.get(segment) || new Map<string, IndexTree>();
+        const nextNode =
+          currentNode.get(segment) || new Map<string, IndexTree>();
         currentNode.set(segment, nextNode);
         currentNode = nextNode;
       }
@@ -20,7 +21,7 @@ export const createIndexTree = (domainMap: DomainMap): IndexTree => {
   }
 
   return indexTree;
-}
+};
 
 /**
  * Collapse consecutive segments with only one child into a single segment (separated by '/')
@@ -40,4 +41,4 @@ export const collapseIndexTree = (indexTree: IndexTree): IndexTree => {
   }
 
   return collapsedTree;
-}
+};

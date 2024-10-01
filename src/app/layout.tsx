@@ -1,8 +1,7 @@
-import type {Metadata, Viewport} from "next";
+import type { Metadata, Viewport } from "next";
 import React from "react";
 import ThemeRegistry from "./ThemeRegistry";
-import {ScraperProvider} from "../utils/scraper/ScraperProvider";
-
+import { ScraperProvider } from "@/utils/scraper/ScraperProvider";
 
 export const metadata: Metadata = {
   title: "Web Scraper UI",
@@ -10,16 +9,18 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   // themeColor: '#9c7a53',
-}
+};
 
-export default function RootLayout({children}: Readonly<{ children: React.ReactNode }>) {
+export default function RootLayout({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-    <body>
-    <ScraperProvider>
-      <ThemeRegistry options={{key: 'joy'}}>{children}</ThemeRegistry>
-    </ScraperProvider>
-    </body>
+      <body>
+        <ScraperProvider>
+          <ThemeRegistry options={{ key: "joy" }}>{children}</ThemeRegistry>
+        </ScraperProvider>
+      </body>
     </html>
   );
 }
