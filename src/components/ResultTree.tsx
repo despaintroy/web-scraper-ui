@@ -6,7 +6,7 @@ import {
   Accordion,
   AccordionDetails,
   AccordionGroup,
-  AccordionSummary,
+  AccordionSummary, Box,
   Stack,
   Typography
 } from "@mui/joy";
@@ -32,11 +32,19 @@ const ResultItem: FC<ResultItemProps> = (props) => {
         const path = '/' + segments.join('/')
         const scrapeEntry = scrapeEntriesMap?.get(path)
 
+        const typography = <Typography style={{display: 'inline'}}
+                                       color={scrapeEntry?.status === ScrapeStatus.ERROR ? 'danger' : scrapeEntry?.status === ScrapeStatus.FETCHED ? 'success' : undefined}>{segment}</Typography>
+
+        if (childIndexTree.size === 0) {
+          return <Box key={segment} style={{marginLeft: 16 + 15}}>
+            {typography}
+          </Box>
+        }
+
         return (
           <details key={segment} style={{marginLeft: 16}}>
             <summary>
-              <Typography style={{display: 'inline'}}
-                          color={scrapeEntry?.status === ScrapeStatus.ERROR ? 'danger' : scrapeEntry?.status === ScrapeStatus.FETCHED ? 'success' : undefined}>{segment}</Typography>
+              {typography}
             </summary>
             <ResultItem indexTree={childIndexTree} scrapeEntriesMap={scrapeEntriesMap} parentSegments={segments}
                         domain={domain}/>
