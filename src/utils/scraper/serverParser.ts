@@ -38,6 +38,11 @@ function getAllHrefs(html: string, baseOrigin: string) {
   return Array.from(urls);
 }
 
+function getPageLanguage(html: string) {
+  const dom = new JSDOM(html);
+  return dom.window.document.documentElement.lang || null;
+}
+
 function getPageTitle(html: string) {
   const match = /<title>([^<]*)<\/title>/i.exec(html);
   return match ? match[1] : null;
@@ -57,6 +62,7 @@ export type PageInfo = {
   title: string | null;
   description: string | null;
   isHTML: boolean;
+  language: string | null;
 };
 
 /** Map page url -> page info */
@@ -101,6 +107,7 @@ export async function getPageUrls(
             title: getPageTitle(source),
             description: getPageDescription(source),
             isHTML: isHTML(source),
+            language: getPageLanguage(source),
           },
         ];
       }),

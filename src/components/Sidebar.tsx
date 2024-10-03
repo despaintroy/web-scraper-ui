@@ -5,6 +5,7 @@ import { ScraperContext } from "@/utils/scraper/ScraperContext";
 import { getPageUrls } from "@/utils/scraper/serverParser";
 import {
   Button,
+  Checkbox,
   FormControl,
   FormHelperText,
   FormLabel,
@@ -23,22 +24,59 @@ const formSchema = z.object({
         : val,
     z.string().url(),
   ),
+  additionalSteps: z.coerce.number(),
+  limitStepsToDomain: z.string(),
+  onlyEnglish: z.boolean(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
 
 const Sidebar: FC = () => {
-  const { addUrls } = useContext(ScraperContext);
+  const { addUrls, domainMap } = useContext(ScraperContext);
 
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<FormValues>({ resolver: zodResolver(formSchema) });
+  } = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: { additionalSteps: 0 },
+  });
 
   const onSubmit: SubmitHandler<FormValues> = async (data) => {
-    const { url } = data;
-    await getPageUrls({ pages: url, mode: "hrefs" }).then(addUrls);
+    const { url, additionalSteps, limitStepsToDomain, onlyEnglish } = data;
+    console.log(data);
+    const pagesToFetch = new Set([url]);
+    let currentStep = 0;
+
+    while (true) {
+      const results = await getPageUrls({
+        pages: Array.from(pagesToFetch),
+        mode: "hrefs",
+      });
+      addUrls(results);
+      pagesToFetch.clear();
+      currentStep++;
+      if (currentStep > additionalSteps) break;
+
+      for (const pageInfo of Object.values(results)) {
+        if (onlyEnglish && !pageInfo?.language?.toLowerCase().startsWith("en"))
+          continue;
+
+        for (const urlString of pageInfo?.urls ?? []) {
+          const { hostname, pathname } = new URL(urlString);
+          if (limitStepsToDomain && !hostname.endsWith(limitStepsToDomain))
+            continue;
+          // TODO: Get pages from referrers
+          if (domainMap.get(hostname)?.get(pathname)?.status === "FETCHED")
+            continue;
+
+          pagesToFetch.add(urlString);
+        }
+      }
+
+      console.log("pagesToFetch", pagesToFetch);
+    }
   };
 
   return (
@@ -47,6 +85,29 @@ const Sidebar: FC = () => {
         <FormLabel>Starting URL</FormLabel>
         <Input {...register("url")} placeholder="https://example.com" />
         {errors.url && <FormHelperText>{errors.url.message}</FormHelperText>}
+      </FormControl>
+
+      <FormControl error={!!errors.additionalSteps}>
+        <FormLabel>Additional Steps</FormLabel>
+        <Input {...register("additionalSteps")} type="number" />
+        {errors.additionalSteps && (
+          <FormHelperText>{errors.additionalSteps.message}</FormHelperText>
+        )}
+      </FormControl>
+
+      <FormControl error={!!errors.limitStepsToDomain}>
+        <FormLabel>Limit Steps to Domain</FormLabel>
+        <Input {...register("limitStepsToDomain")} placeholder="example.com" />
+        {errors.limitStepsToDomain && (
+          <FormHelperText>{errors.limitStepsToDomain.message}</FormHelperText>
+        )}
+      </FormControl>
+
+      <FormControl error={!!errors.onlyEnglish}>
+        <Checkbox label={"Only English"} {...register("onlyEnglish")} />
+        {errors.onlyEnglish && (
+          <FormHelperText>{errors.onlyEnglish.message}</FormHelperText>
+        )}
       </FormControl>
 
       <Button type="submit" fullWidth loading={isSubmitting}>
