@@ -39,7 +39,7 @@ export const ScraperProvider: FC<PropsWithChildren> = ({ children }) => {
     setDomainMap((prev) => {
       const newDomainMap = new Map(prev);
 
-      for (const [scrapedUrlString, foundUrlStrings] of Object.entries(
+      for (const [scrapedUrlString, scrapedPageInfo] of Object.entries(
         result,
       )) {
         const scrapedUrl = new URL(scrapedUrlString);
@@ -49,22 +49,23 @@ export const ScraperProvider: FC<PropsWithChildren> = ({ children }) => {
         const scrapeEntries =
           newDomainMap.get(scrapedDomain) || new Map<string, ScrapeEntry>();
         newDomainMap.set(scrapedDomain, scrapeEntries);
-        const entry = scrapeEntries.get(scrapedPath) || {
+        const entry: ScrapeEntry = scrapeEntries.get(scrapedPath) || {
           status: ScrapeStatus.FOUND,
-          title: null,
-          description: null,
+          title: scrapedPageInfo?.title ?? null,
+          description: scrapedPageInfo?.description ?? null,
+          isHTML: scrapedPageInfo?.isHTML ?? null,
           favorite: false,
           referrers: new Set(),
         };
         entry.status =
-          entry.status === ScrapeStatus.FOUND && foundUrlStrings == null
+          entry.status === ScrapeStatus.FOUND && scrapedPageInfo == null
             ? ScrapeStatus.ERROR
             : ScrapeStatus.FETCHED;
         scrapeEntries.set(scrapedPath, entry);
 
-        if (foundUrlStrings == null) continue;
+        if (scrapedPageInfo == null) continue;
 
-        for (const foundUrlString of foundUrlStrings) {
+        for (const foundUrlString of scrapedPageInfo.urls) {
           const foundUrl = new URL(foundUrlString);
           const foundDomain = foundUrl.hostname;
           const foundPath = foundUrl.pathname;
@@ -83,6 +84,7 @@ export const ScraperProvider: FC<PropsWithChildren> = ({ children }) => {
             status: ScrapeStatus.FOUND,
             title: null,
             description: null,
+            isHTML: null,
             favorite: false,
             referrers: new Set([scrapedUrlString]),
           });
@@ -95,8 +97,10 @@ export const ScraperProvider: FC<PropsWithChildren> = ({ children }) => {
     setIndexTree((prev) => {
       const newIndexTree = new Map(prev);
 
-      for (const foundUrlStrings of Object.values(result)) {
-        for (const foundUrlString of foundUrlStrings ?? []) {
+      for (const [scrapedUrl, pageInfo] of Object.entries(result)) {
+        const urls = [scrapedUrl, ...(pageInfo?.urls ?? [])];
+
+        for (const foundUrlString of urls ?? []) {
           const foundUrl = new URL(foundUrlString);
           const foundDomain = foundUrl.hostname;
           const foundPath = foundUrl.pathname;

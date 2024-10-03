@@ -22,6 +22,7 @@ const ScrapeEntrySchema = z.object({
   description: z.string().nullable().catch(null),
   favorite: z.boolean().catch(false),
   referrers: z.preprocess(coerceToSet, z.set(z.string())).catch(new Set()),
+  isHTML: z.boolean().nullable().catch(null),
 });
 
 const ScrapeEntriesMapSchema = z

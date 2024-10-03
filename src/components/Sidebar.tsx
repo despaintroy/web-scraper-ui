@@ -38,13 +38,13 @@ const Sidebar: FC = () => {
 
   const onSubmit: SubmitHandler<FormValues> = async (data) => {
     const { url } = data;
-    await getPageUrls({ pages: url, onlyLinks: false }).then(addUrls);
+    await getPageUrls({ pages: url, mode: "hrefs" }).then(addUrls);
   };
 
   return (
     <Stack component="form" gap={2} onSubmit={handleSubmit(onSubmit)}>
       <FormControl error={!!errors.url}>
-        <FormLabel>URL</FormLabel>
+        <FormLabel>Starting URL</FormLabel>
         <Input {...register("url")} placeholder="https://example.com" />
         {errors.url && <FormHelperText>{errors.url.message}</FormHelperText>}
       </FormControl>
