@@ -6,6 +6,7 @@ import { CacheProvider } from "@emotion/react";
 import { CssVarsProvider } from "@mui/joy/styles";
 import CssBaseline from "@mui/joy/CssBaseline";
 import React, { PropsWithChildren } from "react";
+import { theme } from "@/utils/theme";
 // import theme from '/path/to/custom/theme'; // OPTIONAL
 
 // This implementation is from emotion-js
@@ -58,9 +59,11 @@ export default function ThemeRegistry(
   return (
     <CacheProvider value={cache}>
       <CssVarsProvider
-      // theme={theme}
+        theme={theme}
+        modeStorageKey="mode-toggle"
+        defaultMode="dark"
+        disableNestedContext
       >
-        {/* the custom theme is optional */}
         <CssBaseline />
         {children}
       </CssVarsProvider>

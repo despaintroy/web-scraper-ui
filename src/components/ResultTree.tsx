@@ -82,9 +82,11 @@ const ResultTree: FC = () => {
 
   return (
     <>
-      <Typography level="h2">{domainMap.size} Domains</Typography>
+      <Typography level="h2" mb={2}>
+        {domainMap.size} Domains
+      </Typography>
 
-      <AccordionGroup>
+      <AccordionGroup size="sm">
         {[...indexTree.entries()]
           .sort(([domainA], [domainB]) => {
             const aName = domainA.split(".").reverse().join(".");

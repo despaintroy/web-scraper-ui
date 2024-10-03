@@ -1,33 +1,29 @@
-"use client";
+import ResultTree from "@/components/ResultTree";
+import Sidebar from "@/components/Sidebar";
+import { Container, Sheet } from "@mui/joy";
 
-import { Button, Container, Input, Typography } from "@mui/joy";
-import { FormEventHandler, useContext, useState } from "react";
-import { getPageUrls } from "@/utils/scraper/serverParser";
-import { ScraperContext } from "@/utils/scraper/ScraperContext";
-import ResultTree from "../components/ResultTree";
+const SIDEBAR_WIDTH = "400px";
 
 export default function Home() {
-  const { addUrls } = useContext(ScraperContext);
-  const [value, setValue] = useState("");
-
-  const onSubmit: FormEventHandler<HTMLFormElement> = async (e) => {
-    e.preventDefault();
-    const formattedUrl = value.startsWith("http") ? value : `https://${value}`;
-    setValue("");
-    await getPageUrls({ pages: formattedUrl, onlyLinks: true }).then(addUrls);
-  };
-
   return (
-    <Container maxWidth="md">
-      <Typography level="h1">Web Scraper</Typography>
-      <form onSubmit={onSubmit}>
-        <Input
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          endDecorator={<Button type="submit">Submit</Button>}
-        />
-      </form>
-      <ResultTree />
-    </Container>
+    <div>
+      <Sheet
+        component="aside"
+        variant="soft"
+        sx={{
+          p: 3,
+          position: "fixed",
+          inset: "0 auto 0 0",
+          width: SIDEBAR_WIDTH,
+        }}
+      >
+        <Sidebar />
+      </Sheet>
+      <main style={{ marginLeft: SIDEBAR_WIDTH }}>
+        <Container maxWidth={false} sx={{ my: 3 }}>
+          <ResultTree />
+        </Container>
+      </main>
+    </div>
   );
 }
