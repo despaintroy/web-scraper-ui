@@ -1,6 +1,7 @@
 import ResultTree from "@/components/ResultTree";
 import Sidebar from "@/components/Sidebar";
 import { Container, Sheet } from "@mui/joy";
+import { Typography } from "@mui/material";
 
 const SIDEBAR_WIDTH = "400px";
 
@@ -21,6 +22,9 @@ export default function Home() {
       </Sheet>
       <main style={{ marginLeft: SIDEBAR_WIDTH }}>
         <Container maxWidth={false} sx={{ my: 3 }}>
+          <Typography level="h2" mb={2}>
+            Results
+          </Typography>
           <ResultTree />
         </Container>
       </main>

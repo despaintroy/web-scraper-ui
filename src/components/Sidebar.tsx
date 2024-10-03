@@ -1,29 +1,58 @@
 "use client";
 
-import { FC, FormEventHandler, useContext, useState } from "react";
-import { Button, Input } from "@mui/material";
+import { FC, useContext } from "react";
 import { ScraperContext } from "@/utils/scraper/ScraperContext";
 import { getPageUrls } from "@/utils/scraper/serverParser";
+import {
+  Button,
+  FormControl,
+  FormHelperText,
+  FormLabel,
+  Input,
+  Stack,
+} from "@mui/joy";
+import { z } from "zod";
+import { SubmitHandler, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+const formSchema = z.object({
+  url: z.preprocess(
+    (val) =>
+      typeof val === "string" && !val.startsWith("http")
+        ? `https://${val}`
+        : val,
+    z.string().url(),
+  ),
+});
+
+type FormValues = z.infer<typeof formSchema>;
 
 const Sidebar: FC = () => {
   const { addUrls } = useContext(ScraperContext);
-  const [value, setValue] = useState("");
 
-  const onSubmit: FormEventHandler<HTMLFormElement> = async (e) => {
-    e.preventDefault();
-    const formattedUrl = value.startsWith("http") ? value : `https://${value}`;
-    setValue("");
-    await getPageUrls({ pages: formattedUrl, onlyLinks: false }).then(addUrls);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<FormValues>({ resolver: zodResolver(formSchema) });
+
+  const onSubmit: SubmitHandler<FormValues> = async (data) => {
+    const { url } = data;
+    await getPageUrls({ pages: url, onlyLinks: false }).then(addUrls);
   };
 
   return (
-    <form onSubmit={onSubmit}>
-      <Input
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        endDecorator={<Button type="submit">Submit</Button>}
-      />
-    </form>
+    <Stack component="form" gap={2} onSubmit={handleSubmit(onSubmit)}>
+      <FormControl error={!!errors.url}>
+        <FormLabel>URL</FormLabel>
+        <Input {...register("url")} placeholder="https://example.com" />
+        {errors.url && <FormHelperText>{errors.url.message}</FormHelperText>}
+      </FormControl>
+
+      <Button type="submit" fullWidth loading={isSubmitting}>
+        Submit
+      </Button>
+    </Stack>
   );
 };
 
